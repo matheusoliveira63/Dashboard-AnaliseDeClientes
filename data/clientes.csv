@@ -1,0 +1,16 @@
+id_cliente,nome,sexo,bairro,cidade,data_servico,itens_higienizados,itens_impermeabilizados,valor_servico
+1,Bruno Campos Palmeira,M,Indianópolis,São Paulo,03/01/2025,"Sofá 2 lugares (retrátil)","Sofá 2 lugares",540.00
+2,Fernando Felix,M,Santo Amaro,São Paulo,03/01/2025,"Sofá 2 lugares (retrátil)","Sofá 2 lugares (retrátil)",540.00
+3,Tarcizius Michels junior,M,Taboão da Serra,São Paulo,06/01/2025,"Sofá 3 lugares (retrátil)","NA",270.00
+4,Jeova da Cruz Lima,M,Taboão da Serra,São Paulo,14/01/2025,"Sofá 2 lugares (retrátil)","NA",260.00
+5,Werner Roberto Vuana Lucio,M,Santo Amaro,São Paulo,14/01/2025,"Colchão casal padrão sem box, Sofá 3 lugares","NA",378.00
+6,Sheila Gomes Rodrigues,F,Sao paulo,São Paulo,05/02/2025,"Sofá 2 lugares (retrátil)","NA",260.00
+7,Karina Machado,F,Vila Andrade,São Paulo,08/02/2025,"Sofá 2 lugares (retrátil)","NA",240.00
+8,Cleusa Gomes da Silva Puertas,F,Vila Campo Grande,São Paulo,07/02/2025,"Sofá 3 lugares (retrátil), Poltrona G","NA",350.00
+9,Maria Aparecida de Oliveira,F,Campo Belo,São Paulo,08/02/2025,"Poltrona G, Tapete","NA",320.00
+10,Manuella Ribas,F,Santo Amaro,São Paulo,15/02/2025,"Sofá 2 lugares (retrátil)","NA",247.00
+11,Barbara Franco,F,Brooklin Paulista,São Paulo,15/02/2025,"Tapete","NA",190.00
+12,Juliana Izidoro,F,Chácara Santo Antônio,São Paulo,14/02/2025,"Sofá 2 lugares (retrátil)","NA",260.00
+13,Bianca Zago,F,Vila Mascote,São Paulo,17/02/2025,"Sofá 5 lugares (retrátil)","NA",248.00
+14,Nicolly Cruz da Silva,F,Jardim Itapeva,São Paulo,13/02/2025,"Sofá 2 lugares (retrátil), Colchão casal padrão sem box","NA",368.00
+15,Josenilda da Silva,F,Jardim Maria Duarte,São Paulo,14/02/2025,"Sofá 2 lugares","NA",256.00
