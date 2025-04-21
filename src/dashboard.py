@@ -3,7 +3,7 @@ from dash import dcc, html, dash_table
 from dash.dependencies import Input, Output
 import plotly.express as px
 import pandas as pd
-from processamento_dados import carregar_dados
+from src.processamento_dados import carregar_dados
 from insights import gerar_insights
 
 # =============================================
