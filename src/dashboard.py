@@ -3,8 +3,8 @@ from dash import dcc, html, dash_table
 from dash.dependencies import Input, Output
 import plotly.express as px
 import pandas as pd
-from src.processamento_dados import carregar_dados
-from src.insights import gerar_insights
+from processamento_dados import carregar_dados
+from insights import gerar_insights
 
 # =============================================
 # CONFIGURAÇÃO INICIAL
@@ -311,7 +311,7 @@ app.layout = html.Div(style={
         'color': CORES['terciaria'],
         'marginTop': '40px'
     }, children=[
-        html.P("© 2023 Sofá Novo de Novo | Todos os direitos reservados"),
+        html.P("© 2025 Sofá Novo de Novo | Todos os direitos reservados"),
         html.P("Dashboard Analytics | v1.0", style={'opacity': '0.8', 'marginTop': '5px'})
     ])
 ])
