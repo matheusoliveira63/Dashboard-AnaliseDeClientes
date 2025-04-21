@@ -10,12 +10,16 @@ def gerar_insights(dados):
     insights = []
     
     # Verifica se há dados válidos
+
+    if not isinstance(dados, pd.DataFrame) or dados.empty:
+        return ["⚠️ Nenhum dado válido para análise"]
+
     if dados.empty or not isinstance(dados, pd.DataFrame):
         return ["⚠️ Nenhum dado válido encontrado"]
     
     try:
         # --- ANÁLISE DEMOGRÁFICA ---
-        if 'sexo' in dados.columns:
+        if 'sexo' in dados.columns and not dados['sexo'].empty:
             contagem_sexo = dados['sexo'].value_counts(normalize=True) * 100
             for sexo, percentual in contagem_sexo.items():
                 insights.append(f"👥 {sexo}: {percentual:.1f}%")

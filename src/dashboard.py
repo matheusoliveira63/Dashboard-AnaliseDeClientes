@@ -1,9 +1,13 @@
+from auth import User, init_auth
+from flask_login import login_required, login_user, current_user
+from flask import request, redirect, url_for, render_template_string
+import os
+
 import dash
 from dash import dcc, html, dash_table
 from dash.dependencies import Input, Output
 import plotly.express as px
 import pandas as pd
-import os
 from processamento_dados import carregar_dados
 from insights import gerar_insights
 
@@ -15,12 +19,16 @@ external_stylesheets = [
     'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap'
 ]
 
-# Primeiro carregamos os dados
+# Carrega os dados
 dados = carregar_dados()
 
-# Depois inicializamos o app
+# Inicializa o app Dash
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
+app.config.suppress_callback_exceptions = True
+
+# Configuração de autenticação
+init_auth(server)
 
 # =============================================
 # PALETA DE CORES - SOFÁ NOVO DE NOVO
@@ -36,8 +44,103 @@ CORES = {
     'gradiente': 'linear-gradient(135deg, #1A3967 0%, #0D1F3D 100%)'
 }
 
+# Página de login
+LOGIN_PAGE = """
+<!doctype html>
+<html>
+<head>
+    <title>Login</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F7F7F7;
+        }
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #1A3967;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Poppins', sans-serif;
+        }
+        button {
+            background: #1A3967;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 5px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #0D1F3D;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo img {
+            height: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <img src="/assets/logo.png" alt="Sofá Novo de Novo">
+        </div>
+        <h2>Acesso Restrito</h2>
+        <form method="post">
+            <div>
+                <label>Usuário:</label>
+                <input type="text" name="username" required>
+            </div>
+            <div>
+                <label>Senha:</label>
+                <input type="password" name="password" required>
+            </div>
+            <button type="submit">Acessar Dashboard</button>
+        </form>
+    </div>
+</body>
+</html>
+"""
+
+@server.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user = User(username)
+        login_user(user)
+        return redirect('/')
+    return render_template_string(LOGIN_PAGE)
+
+# Protege todas as views do Dash
+@server.before_request
+def check_login():
+    if not current_user.is_authenticated and request.endpoint not in ['login', 'static']:
+        return redirect('/login')
+
 # =============================================
-# ESTILOS CSS PERSONALIZADOS
+# LAYOUT DO DASHBOARD
 # =============================================
 app.layout = html.Div(style={
     'fontFamily': "'Poppins', sans-serif",
@@ -76,7 +179,18 @@ app.layout = html.Div(style={
                 'fontSize': '20px',
                 'opacity': '0.9'
             })
-        ])
+        ]),
+        html.Div(style={'display': 'flex', 'alignItems': 'center'}, children=[
+            html.Span(f"Olá, {current_user.id}", style={'marginRight': '15px'}),
+            html.A("Sair", href="/logout", style={
+                'color': CORES['terciaria'],
+                'textDecoration': 'none',
+                'padding': '8px 15px',
+                'borderRadius': '5px',
+                'backgroundColor': CORES['secundaria'],
+                'transition': 'all 0.3s'
+            })
+        ]) if current_user.is_authenticated else None
     ]),
     
     # Container Principal
@@ -342,17 +456,14 @@ def atualizar_conteudo(sexo, bairro, page_size):
         df_filtrado = df_filtrado[df_filtrado['bairro'] == bairro]
     
     # Gráfico de Distribuição por Sexo
-    contagem_sexo = df_filtrado['sexo'].value_counts().reset_index()
-    contagem_sexo.columns = ['sexo', 'quantidade']
-    
     fig_sexo = px.pie(
-        contagem_sexo,
-        values='quantidade',
+        df_filtrado,
         names='sexo',
         title='Distribuição por Sexo',
         color_discrete_sequence=[CORES['primaria'], CORES['secundaria']],
         hole=0.4
-    )
+    ) if 'sexo' in df_filtrado.columns else px.pie(title='Dados não disponíveis')
+    
     fig_sexo.update_layout(
         title_x=0.5,
         margin=dict(l=20, r=20, t=60, b=20),
@@ -361,25 +472,18 @@ def atualizar_conteudo(sexo, bairro, page_size):
         paper_bgcolor=CORES['terciaria'],
         font=dict(color=CORES['texto'])
     )
-    fig_sexo.update_traces(
-        textposition='inside',
-        textinfo='percent+label',
-        marker=dict(line=dict(color=CORES['terciaria'], width=1))
-    )
     
     # Gráfico de Top Bairros
-    contagem_bairros = df_filtrado['bairro'].value_counts().reset_index()
-    contagem_bairros.columns = ['bairro', 'quantidade']
-    
     fig_bairros = px.bar(
-        contagem_bairros.head(10),
-        x='quantidade',
+        df_filtrado['bairro'].value_counts().reset_index().head(10),
+        x='count',
         y='bairro',
         title='Top 10 Bairros',
         orientation='h',
-        color='quantidade',
+        color='count',
         color_continuous_scale=[CORES['fundo'], CORES['primaria']]
-    )
+    ) if 'bairro' in df_filtrado.columns else px.bar(title='Dados não disponíveis')
+    
     fig_bairros.update_layout(
         title_x=0.5,
         yaxis={'categoryorder': 'total ascending'},
@@ -391,17 +495,15 @@ def atualizar_conteudo(sexo, bairro, page_size):
     )
     
     # Gráfico de Itens Mais Higienizados
-    contagem_itens = df_filtrado['itens_higienizados'].value_counts().reset_index()
-    contagem_itens.columns = ['item', 'quantidade']
-    
     fig_itens = px.bar(
-        contagem_itens.head(10),
-        x='item',
-        y='quantidade',
+        df_filtrado['itens_higienizados'].value_counts().reset_index().head(10),
+        x='count',
+        y='itens_higienizados',
         title='Top 10 Itens Higienizados',
-        color='quantidade',
+        color='count',
         color_continuous_scale=[CORES['fundo'], CORES['secundaria']]
-    )
+    ) if 'itens_higienizados' in df_filtrado.columns else px.bar(title='Dados não disponíveis')
+    
     fig_itens.update_layout(
         title_x=0.5,
         xaxis_tickangle=-45,
@@ -442,8 +544,15 @@ def atualizar_insights(sexo, bairro):
         ) for insight in insights
     ])
 
+# Rota de logout
+@server.route('/logout')
+def logout():
+    from flask_login import logout_user
+    logout_user()
+    return redirect('/login')
+
 # =============================================
 # INICIALIZAÇÃO DO APLICATIVO
 # =============================================
 if __name__ == '__main__':
-    app.run(debug=True)   
+    app.run_server(debug=True)

@@ -1,30 +1,41 @@
 import pandas as pd
 import os
+from pathlib import Path
 
 def carregar_dados():
     try:
-        caminho = os.path.join('data', 'clientes.csv')
+        # Caminho mais robusto usando pathlib
+        caminho = Path('data') / 'clientes.csv'
         
-        # Leitura com tratamento explícito de decimais
+        if not caminho.exists():
+            # Fallback para desenvolvimento - criar dados de exemplo
+            print("⚠️ Arquivo não encontrado, usando dados de exemplo")
+            return pd.DataFrame({
+                'sexo': ['M', 'F', 'M', 'F'],
+                'bairro': ['Centro', 'Vila Olímpia', 'Centro', 'Moema'],
+                'itens_higienizados': ['Sofá', 'Cadeira', 'Sofá', 'Poltrona'],
+                'valor_servico': [350.50, 420.0, 380.25, 500.75]
+            })
+        
+        # Leitura com tratamento robusto
         dados = pd.read_csv(
             caminho,
             encoding='utf-8',
-            dtype={'valor_servico': str}  # Força leitura como string
+            dtype={'valor_servico': str},
+            na_values=['', 'NA', 'N/A']
         )
         
-        # Conversão segura para valores monetários
-        dados['valor_servico'] = (
-            dados['valor_servico']
-            .str.replace('R\$', '', regex=True)  # Remove R$
-            .str.replace(',', '', regex=True)  # Remove vírgulas (se houver)
-            .str.strip()  # Remove espaços
-            .replace('', '0')  # Substitui vazios por 0
-            .astype(float)  # Converte para float
-            .round(2)  # Arredonda para 2 decimais
-        )
+        # Processamento seguro
+        if 'valor_servico' in dados.columns:
+            dados['valor_servico'] = (
+                dados['valor_servico']
+                .str.replace(r'[^\d.]', '', regex=True)
+                .replace('', '0')
+                .astype(float) )
         
         return dados
     
     except Exception as e:
-        print(f"\nERRO CRÍTICO: {str(e)}")
+        print(f"Erro ao carregar dados: {str(e)}")
+        # Retorna DataFrame vazio para não quebrar o dashboard
         return pd.DataFrame()
