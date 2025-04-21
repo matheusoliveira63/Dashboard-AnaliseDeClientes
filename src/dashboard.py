@@ -1,16 +1,10 @@
-from auth import User, init_auth
-from flask_login import login_required, login_user, current_user
-from flask import request, redirect, url_for, render_template_string
-import os
-
 import dash
 from dash import dcc, html, dash_table
 from dash.dependencies import Input, Output
 import plotly.express as px
 import pandas as pd
-from src.auth import User, init_auth
-from src.processamento_dados import carregar_dados
-from src.insights import gerar_insights
+from processamento_dados import carregar_dados
+from insights import gerar_insights
 
 # =============================================
 # CONFIGURAÇÃO INICIAL
@@ -26,13 +20,9 @@ dados = carregar_dados()
 # Inicializa o app Dash
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
-app.config.suppress_callback_exceptions = True
-
-# Configuração de autenticação
-init_auth(server)
 
 # =============================================
-# PALETA DE CORES - SOFÁ NOVO DE NOVO
+# PALETA DE CORES
 # =============================================
 CORES = {
     'primaria': '#1A3967',
@@ -45,101 +35,6 @@ CORES = {
     'gradiente': 'linear-gradient(135deg, #1A3967 0%, #0D1F3D 100%)'
 }
 
-# Página de login
-LOGIN_PAGE = """
-<!doctype html>
-<html>
-<head>
-    <title>Login</title>
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #F7F7F7;
-        }
-        .login-container {
-            max-width: 400px;
-            margin: 100px auto;
-            padding: 30px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        h2 {
-            color: #1A3967;
-            text-align: center;
-            margin-bottom: 25px;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-family: 'Poppins', sans-serif;
-        }
-        button {
-            background: #1A3967;
-            color: white;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 5px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background: #0D1F3D;
-        }
-        .logo {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .logo img {
-            height: 80px;
-        }
-    </style>
-</head>
-<body>
-    <div class="login-container">
-        <div class="logo">
-            <img src="/assets/logo.png" alt="Sofá Novo de Novo">
-        </div>
-        <h2>Acesso Restrito</h2>
-        <form method="post">
-            <div>
-                <label>Usuário:</label>
-                <input type="text" name="username" required>
-            </div>
-            <div>
-                <label>Senha:</label>
-                <input type="password" name="password" required>
-            </div>
-            <button type="submit">Acessar Dashboard</button>
-        </form>
-    </div>
-</body>
-</html>
-"""
-
-@server.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        user = User(username)
-        login_user(user)
-        return redirect('/')
-    return render_template_string(LOGIN_PAGE)
-
-# Protege todas as views do Dash
-@server.before_request
-def check_login():
-    if not current_user.is_authenticated and request.endpoint not in ['login', 'static']:
-        return redirect('/login')
-
 # =============================================
 # LAYOUT DO DASHBOARD
 # =============================================
@@ -150,7 +45,7 @@ app.layout = html.Div(style={
     'margin': '0',
     'padding': '0'
 }, children=[
-    # Barra de Navegação Superior Fixa
+    # Barra de Navegação Superior
     html.Div(style={
         'background': CORES['gradiente'],
         'color': CORES['terciaria'],
@@ -180,18 +75,7 @@ app.layout = html.Div(style={
                 'fontSize': '20px',
                 'opacity': '0.9'
             })
-        ]),
-        html.Div(style={'display': 'flex', 'alignItems': 'center'}, children=[
-            html.Span(f"Olá, {current_user.id}", style={'marginRight': '15px'}),
-            html.A("Sair", href="/logout", style={
-                'color': CORES['terciaria'],
-                'textDecoration': 'none',
-                'padding': '8px 15px',
-                'borderRadius': '5px',
-                'backgroundColor': CORES['secundaria'],
-                'transition': 'all 0.3s'
-            })
-        ]) if current_user.is_authenticated else None
+        ])
     ]),
     
     # Container Principal
@@ -200,7 +84,7 @@ app.layout = html.Div(style={
         'maxWidth': '1400px',
         'margin': '0 auto'
     }, children=[
-        # Linha de Filtros (2 colunas)
+        # Linha de Filtros
         html.Div(style={
             'display': 'grid',
             'gridTemplateColumns': 'repeat(2, 1fr)',
@@ -250,7 +134,7 @@ app.layout = html.Div(style={
             ])
         ]),
         
-        # Grade de Gráficos (3 colunas responsivas)
+        # Grade de Gráficos
         html.Div(style={
             'display': 'grid',
             'gridTemplateColumns': 'repeat(auto-fit, minmax(350px, 1fr))',
@@ -385,7 +269,7 @@ app.layout = html.Div(style={
                 )
             ]),
             
-            # Card de Insights (com scroll)
+            # Card de Insights
             html.Div(style={
                 'backgroundColor': CORES['terciaria'],
                 'borderRadius': '8px',
@@ -412,9 +296,7 @@ app.layout = html.Div(style={
                     style={
                         'flex': '1',
                         'overflowY': 'auto',
-                        'paddingRight': '10px',
-                        'scrollbarWidth': 'thin',
-                        'scrollbarColor': f'{CORES["secundaria"]} {CORES["fundo"]}'
+                        'paddingRight': '10px'
                     }
                 )
             ])
@@ -435,7 +317,7 @@ app.layout = html.Div(style={
 ])
 
 # =============================================
-# CALLBACKS PARA ATUALIZAÇÃO DINÂMICA
+# CALLBACKS
 # =============================================
 @app.callback(
     [Output('grafico-sexo', 'figure'),
@@ -456,7 +338,7 @@ def atualizar_conteudo(sexo, bairro, page_size):
     if bairro != 'all':
         df_filtrado = df_filtrado[df_filtrado['bairro'] == bairro]
     
-    # Gráfico de Distribuição por Sexo
+    # Gráfico de Sexo
     fig_sexo = px.pie(
         df_filtrado,
         names='sexo',
@@ -474,7 +356,7 @@ def atualizar_conteudo(sexo, bairro, page_size):
         font=dict(color=CORES['texto'])
     )
     
-    # Gráfico de Top Bairros
+    # Gráfico de Bairros
     fig_bairros = px.bar(
         df_filtrado['bairro'].value_counts().reset_index().head(10),
         x='count',
@@ -495,7 +377,7 @@ def atualizar_conteudo(sexo, bairro, page_size):
         font=dict(color=CORES['texto'])
     )
     
-    # Gráfico de Itens Mais Higienizados
+    # Gráfico de Itens
     fig_itens = px.bar(
         df_filtrado['itens_higienizados'].value_counts().reset_index().head(10),
         x='count',
@@ -545,15 +427,8 @@ def atualizar_insights(sexo, bairro):
         ) for insight in insights
     ])
 
-# Rota de logout
-@server.route('/logout')
-def logout():
-    from flask_login import logout_user
-    logout_user()
-    return redirect('/login')
-
 # =============================================
-# INICIALIZAÇÃO DO APLICATIVO
+# INICIALIZAÇÃO
 # =============================================
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run(debug=True)
