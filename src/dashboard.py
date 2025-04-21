@@ -4,7 +4,7 @@ from dash.dependencies import Input, Output
 import plotly.express as px
 import pandas as pd
 from src.processamento_dados import carregar_dados
-from insights import gerar_insights
+from src.insights import gerar_insights
 
 # =============================================
 # CONFIGURAÇÃO INICIAL
