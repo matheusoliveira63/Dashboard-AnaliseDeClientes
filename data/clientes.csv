@@ -14,3 +14,8 @@ id_cliente,nome,sexo,bairro,cidade,data_servico,itens_higienizados,itens_imperme
 13,Bianca Zago,F,Vila Mascote,São Paulo,17/02/2025,"Sofá 5 lugares (retrátil)","NA",248.00
 14,Nicolly Cruz da Silva,F,Jardim Itapeva,São Paulo,13/02/2025,"Sofá 2 lugares (retrátil), Colchão casal padrão sem box","NA",368.00
 15,Josenilda da Silva,F,Jardim Maria Duarte,São Paulo,14/02/2025,"Sofá 2 lugares","NA",256.00
+16,Elaine de Souza Rainha,F,Jardim Maria Duarte,São Paulo,22/02/2025,"NA","Cadeira - assento x 6",240.00
+17,Cida,F,Jardim Germânia,São Paulo,02/04/2025,"Sofá 5 lugares (retrátil)","NA",285.00
+18,Thais Nayara Coelho Rodrigues,F,Jardim Novo Santo Amaro,São Paulo,26/02/2025,"Sofá 2 lugares (retrátil), Colchão solteiro padrão sem box","NA",370.00
+19,Barbara Samira Berno Moughalabie,F,Brooklin,São Paulo,05/03/2025,"Sofá 2 lugares (retrátil), Cadeira assento e encosto, Tapete","NA",540.00
+20,Jessica Freitas,F,Conjunto Promorar São Luis,São Paulo,28/02/2025,"Poltrona G, Sofá 2 lugares (retrátil)","NA",350.00
